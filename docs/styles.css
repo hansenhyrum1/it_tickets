@@ -73,6 +73,44 @@ p {
   line-height: 1.6;
 }
 
+.field-help {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+}
+
+.selected-attachments {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.selected-attachment {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: #fff;
+}
+
+.selected-attachment-name {
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.selected-attachment-size {
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.selected-attachment-remove {
+  padding: 6px 10px;
+  font-size: 0.78rem;
+}
+
 .card {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 248, 0.98));
   border: 1px solid var(--line);
@@ -146,6 +184,25 @@ button.secondary,
   color: var(--text);
 }
 
+button.is-loading {
+  position: relative;
+  padding-right: 42px;
+}
+
+button.is-loading::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  animation: button-spin 0.8s linear infinite;
+}
+
 .inline-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -203,6 +260,10 @@ footer {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes button-spin {
+  to { transform: translateY(-50%) rotate(360deg); }
 }
 
 .notice {
@@ -295,4 +356,35 @@ footer {
 .ticket-controls select {
   width: auto;
   min-width: 160px;
+}
+
+.ticket-attachments {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.attachment-link {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  background: #fff;
+}
+
+.attachment-link img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.attachment-link span {
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
 }

@@ -73,13 +73,32 @@ const renderTickets = (tickets) => {
     const issue = ticket.title || "Untitled issue";
     const description = ticket.description || "No description";
     const email = ticket.email || "No email";
+    const device = ticket.device || "Not specified";
     const importance = ticket.importance || "Medium";
     const status = ticket.status || "New";
     const statusClass = status.replace(/\s+/g, "-");
+    const attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
 
     const statusOptions = STATUS_OPTIONS.map(
       (value) => `<option value="${value}" ${value === status ? "selected" : ""}>${value}</option>`
     ).join("");
+
+    const attachmentsHtml = attachments.length
+      ? `
+        <div class="ticket-attachments">
+          ${attachments
+            .map(
+              (attachment) => `
+                <a class="attachment-link" href="${attachment.url}" target="_blank" rel="noopener noreferrer">
+                  <img src="${attachment.url}" alt="${attachment.name || "Ticket attachment"}" loading="lazy">
+                  <span>${attachment.name || "Attachment"}</span>
+                </a>
+              `
+            )
+            .join("")}
+        </div>
+      `
+      : `<span><strong>Attachments:</strong> None</span>`;
 
     card.innerHTML = `
       <div class="ticket-top">
@@ -92,8 +111,10 @@ const renderTickets = (tickets) => {
       <p class="ticket-body">${description}</p>
       <div class="ticket-meta">
         <span><strong>Email:</strong> ${email}</span>
+        <span><strong>Device:</strong> ${device}</span>
         <span><strong>Created:</strong> ${formatDate(ticket.createdAt)}</span>
         <span><strong>Updated:</strong> ${formatDate(ticket.updatedAt)}</span>
+        ${attachmentsHtml}
       </div>
       <div class="ticket-controls">
         <label for="status-${ticket.id}">Status</label>

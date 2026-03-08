@@ -30,9 +30,13 @@
       "**/node_modules/**"
     ]
   },
-  "storage": {
-    "rules": "storage.rules"
-  },
+  "storage": [
+    {
+      "bucket": "it-tickets-992de",
+      "target": "tickets",
+      "rules": "storage.rules"
+    }
+  ],
   "auth": {
     "providers": {}
   }

@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "employee-app-992de"
+  },
+  "targets": {
+    "employee-app-992de": {
+      "storage": {
+        "tickets": [
+          "it-tickets-992de"
+        ]
+      }
+    }
   }
 }

@@ -20,6 +20,18 @@ service firebase.storage {
       allow write: if isAdmin();
     }
 
+    // Ticket screenshot uploads from the public intake form.
+    match /tickets/{ticketId}/attachments/{fileName} {
+      allow read: if isAdmin();
+      allow write: if
+        (request.resource == null && isAdmin()) ||
+        (
+          request.resource != null &&
+          request.resource.contentType.matches('image/.*') &&
+          request.resource.size <= 10 * 1024 * 1024
+        );
+    }
+
     // Deny everything else by default
     match /{allPaths=**} {
       allow read, write: if false;

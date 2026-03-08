@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC-mSgvUIapRIKGK4LDHIdFo9Ywlnd4Xe8",
@@ -14,7 +15,9 @@ const firebaseConfig = {
 
 export const DATABASE_ID = "it-tickets";
 export const PROJECT_ID = firebaseConfig.projectId;
+export const TICKET_STORAGE_BUCKET = "gs://it-tickets-992de";
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, DATABASE_ID);
+export const storage = getStorage(app, TICKET_STORAGE_BUCKET);

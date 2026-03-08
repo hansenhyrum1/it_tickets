@@ -46,6 +46,20 @@
           </div>
         </div>
 
+        <div class="inline-grid">
+          <div>
+            <label for="device">Device / Device Name</label>
+            <input id="device" name="device" placeholder="Dell Latitude 7440 or WS-0142">
+          </div>
+        </div>
+
+        <div>
+          <label for="attachments">Screenshots / Pictures</label>
+          <input id="attachments" name="attachments" type="file" accept="image/*" multiple>
+          <p class="field-help">Optional. You can attach up to 5 images (10 MB max each).</p>
+          <div id="selected-attachments" class="selected-attachments" style="display:none;"></div>
+        </div>
+
         <div class="actions">
           <button type="submit">Submit Ticket</button>
           <span id="success-message" style="display:none; color: var(--success);"></span>
