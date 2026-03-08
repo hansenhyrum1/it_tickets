@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IT Ticket Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container fade-in" style="padding-top: 48px;">
+    <section class="card" id="auth-section">
+      <h2>Admin Sign In</h2>
+      <form id="auth-form">
+        <div class="inline-grid">
+          <div>
+            <label for="auth-email">Email</label>
+            <input id="auth-email" name="email" type="email" placeholder="you@company.com" required>
+          </div>
+          <div>
+            <label for="auth-password">Password</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input id="auth-password" name="password" type="password" placeholder="password" required>
+              <button type="button" id="toggle-password" class="secondary">Show</button>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" id="auth-login">Sign In</button>
+          <span id="auth-status" style="color: var(--muted);"></span>
+        </div>
+        <div id="auth-error" class="notice" style="display:none;"></div>
+        <div id="admin-note" class="notice" style="display:none; margin-top: 12px;"></div>
+      </form>
+    </section>
+
+    <section class="card" id="account-section" style="display:none;">
+      <div class="actions" style="justify-content: space-between; align-items: center;">
+        <span id="account-status" style="color: var(--muted);"></span>
+        <button type="button" id="account-logout" class="secondary">Sign Out</button>
+      </div>
+    </section>
+
+    <section class="card" id="tickets-section" style="display:none;">
+      <h2>Ticket List</h2>
+      <div id="ticket-list" class="ticket-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="button secondary" href="index.html">Back to Submit</a>
+  </footer>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
