@@ -15,7 +15,6 @@ if (form) {
       description: data.get("description").trim(),
       requester: data.get("requester").trim(),
       email: data.get("email").trim(),
-      department: data.get("department").trim(),
       importance: data.get("importance"),
       status: "New",
       createdAt: serverTimestamp(),

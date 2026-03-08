@@ -5,13 +5,18 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 import { auth, db } from "./firebase-client.js";
+
+const STATUS_OPTIONS = ["New", "In Progress", "Waiting", "Resolved", "Closed"];
 
 const listEl = document.querySelector("#ticket-list");
 
@@ -30,7 +35,7 @@ const accountLogout = document.querySelector("#account-logout");
 const ticketsSection = document.querySelector("#tickets-section");
 
 let unsubscribe = null;
-const REQUIRE_LOGIN_EACH_VISIT = true;
+let isAdmin = false;
 
 const showAuthError = (message) => {
   authError.textContent = message;
@@ -47,6 +52,11 @@ const setAdminNote = (message) => {
   adminNote.style.display = message ? "block" : "none";
 };
 
+const formatDate = (value) => {
+  const date = value?.toDate ? value.toDate() : null;
+  return date ? date.toLocaleString() : "Pending timestamp";
+};
+
 const renderTickets = (tickets) => {
   listEl.innerHTML = "";
 
@@ -56,22 +66,41 @@ const renderTickets = (tickets) => {
   }
 
   tickets.forEach((ticket) => {
-    const card = document.createElement("div");
+    const card = document.createElement("article");
     card.className = "ticket";
 
-    const createdAt = ticket.createdAt?.toDate ? ticket.createdAt.toDate() : null;
-    const createdLabel = createdAt ? createdAt.toLocaleString() : "Pending timestamp";
-    const statusClass = (ticket.status || "New").replace(/\s+/g, "-");
+    const requester = ticket.requester || "Unknown requester";
+    const issue = ticket.title || "Untitled issue";
+    const description = ticket.description || "No description";
+    const email = ticket.email || "No email";
+    const importance = ticket.importance || "Medium";
+    const status = ticket.status || "New";
+    const statusClass = status.replace(/\s+/g, "-");
+
+    const statusOptions = STATUS_OPTIONS.map(
+      (value) => `<option value="${value}" ${value === status ? "selected" : ""}>${value}</option>`
+    ).join("");
 
     card.innerHTML = `
-      <h3>${ticket.title || "Untitled"}</h3>
-      <small>${ticket.id} • ${createdLabel}</small>
-      <p>${ticket.description || "No description"}</p>
-      <small>Requester: ${ticket.requester || "Unknown"} • ${ticket.email || "No email"}</small><br>
-      <small>Department: ${ticket.department || "Unspecified"}</small>
-      <div style="margin-top: 10px;">
-        <span class="status-pill status-${statusClass}">${ticket.status || "New"}</span>
-        <span class="status-pill">${ticket.importance || "Medium"}</span>
+      <div class="ticket-top">
+        <h3>${requester} - ${issue}</h3>
+        <div class="actions">
+          <span class="status-pill status-${statusClass}">${status}</span>
+          <span class="status-pill">${importance}</span>
+        </div>
+      </div>
+      <p class="ticket-body">${description}</p>
+      <div class="ticket-meta">
+        <span><strong>Email:</strong> ${email}</span>
+        <span><strong>Created:</strong> ${formatDate(ticket.createdAt)}</span>
+        <span><strong>Updated:</strong> ${formatDate(ticket.updatedAt)}</span>
+      </div>
+      <div class="ticket-controls">
+        <label for="status-${ticket.id}">Status</label>
+        <select id="status-${ticket.id}" data-action="status" data-id="${ticket.id}">
+          ${statusOptions}
+        </select>
+        <button type="button" class="secondary" data-action="delete" data-id="${ticket.id}">Delete Ticket</button>
       </div>
     `;
 
@@ -93,7 +122,7 @@ const attachListener = () => {
   unsubscribe = onSnapshot(
     ticketsQuery,
     (snapshot) => {
-      const tickets = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const tickets = snapshot.docs.map((ticketDoc) => ({ id: ticketDoc.id, ...ticketDoc.data() }));
       renderTickets(tickets);
     },
     (error) => {
@@ -137,8 +166,47 @@ togglePassword.addEventListener("click", () => {
   togglePassword.textContent = isHidden ? "Hide" : "Show";
 });
 
+listEl.addEventListener("change", async (event) => {
+  if (!isAdmin) return;
+
+  const target = event.target;
+  if (target.dataset.action !== "status") return;
+
+  const id = target.dataset.id;
+  const nextStatus = target.value;
+
+  try {
+    await updateDoc(doc(db, "tickets", id), {
+      status: nextStatus,
+      updatedAt: serverTimestamp(),
+    });
+    setAdminNote("");
+  } catch (error) {
+    setAdminNote(`Status update failed: ${error.message}`);
+  }
+});
+
+listEl.addEventListener("click", async (event) => {
+  if (!isAdmin) return;
+
+  const target = event.target;
+  if (target.dataset.action !== "delete") return;
+
+  const id = target.dataset.id;
+  const confirmed = window.confirm("Delete this ticket permanently?");
+  if (!confirmed) return;
+
+  try {
+    await deleteDoc(doc(db, "tickets", id));
+    setAdminNote("");
+  } catch (error) {
+    setAdminNote(`Delete failed: ${error.message}`);
+  }
+});
+
 onAuthStateChanged(auth, (user) => {
   if (!user) {
+    isAdmin = false;
     setAuthStatus("Signed out");
     setAdminNote("");
     authSection.style.display = "block";
@@ -158,6 +226,7 @@ onAuthStateChanged(auth, (user) => {
   getDoc(doc(db, "admins", user.uid))
     .then((adminDoc) => {
       if (!adminDoc.exists()) {
+        isAdmin = false;
         setAdminNote("Access denied: this account is not in admins/{uid}.");
         stopListener();
         renderTickets([]);
@@ -165,18 +234,16 @@ onAuthStateChanged(auth, (user) => {
         return;
       }
 
+      isAdmin = true;
       setAdminNote("");
       ticketsSection.style.display = "block";
       attachListener();
     })
     .catch((error) => {
+      isAdmin = false;
       setAdminNote(`Admin check failed: ${error.message}`);
       stopListener();
       renderTickets([]);
       ticketsSection.style.display = "none";
     });
 });
-
-if (REQUIRE_LOGIN_EACH_VISIT) {
-  signOut(auth).catch(() => {});
-}
