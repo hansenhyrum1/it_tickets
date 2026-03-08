@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IT Ticket Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container fade-in" style="padding-top: 48px;">
+    <section class="card">
+      <h2>Create a Ticket</h2>
+      <form id="ticket-form">
+        <div class="inline-grid">
+          <div>
+            <label for="title">Issue Title</label>
+            <input id="title" name="title" required placeholder="Laptop won't boot">
+          </div>
+        </div>
+
+        <div>
+          <label for="description">Description</label>
+          <textarea id="description" name="description" required placeholder="Steps taken, error messages, impacted systems..."></textarea>
+        </div>
+
+        <div class="inline-grid">
+          <div>
+            <label for="requester">Requester Name</label>
+            <input id="requester" name="requester" placeholder="Alex Rivera">
+          </div>
+          <div>
+            <label for="email">Requester Email</label>
+            <input id="email" name="email" type="email" placeholder="alex@company.com">
+          </div>
+          <div>
+            <label for="importance">Importance</label>
+            <select id="importance" name="importance">
+              <option>Low</option>
+              <option selected>Medium</option>
+              <option>High</option>
+              <option>Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit">Submit Ticket</button>
+          <span id="success-message" style="display:none; color: var(--success);"></span>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <a class="button secondary" href="admin.html">Admin View</a>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
