@@ -158,6 +158,10 @@ textarea {
   gap: 12px;
 }
 
+.submit-actions {
+  justify-content: center;
+}
+
 button,
 .button {
   cursor: pointer;
@@ -251,6 +255,11 @@ footer {
   color: var(--muted);
   font-size: 13px;
   padding: 28px 0 40px;
+}
+
+footer.footer-left {
+  text-align: left;
+  padding-left: 24px;
 }
 
 .fade-in {
@@ -387,4 +396,10 @@ footer {
   font-size: 0.8rem;
   color: var(--muted);
   overflow-wrap: anywhere;
+}
+
+.grecaptcha-badge {
+  z-index: 9999 !important;
+  right: 12px !important;
+  bottom: 12px !important;
 }

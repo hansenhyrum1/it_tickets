@@ -4,12 +4,18 @@ import {
   serverTimestamp,
   setDoc,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-functions.js";
 import {
   getDownloadURL,
   ref,
   uploadBytes,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-storage.js";
-import { db, storage } from "./firebase-client.js";
+import {
+  db,
+  functions,
+  RECAPTCHA_SITE_KEY,
+  storage,
+} from "./firebase-client.js";
 
 const form = document.querySelector("#ticket-form");
 const successEl = document.querySelector("#success-message");
@@ -20,6 +26,9 @@ const selectedAttachmentsEl = document.querySelector("#selected-attachments");
 
 const MAX_FILES = 5;
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+const RECAPTCHA_ACTION = "submit_ticket";
+
+const verifyRecaptchaV3 = httpsCallable(functions, "verifyRecaptchaV3");
 
 const sanitizeFileName = (name) => name.replace(/[^a-zA-Z0-9._-]/g, "_");
 
@@ -29,6 +38,7 @@ const formatFileSize = (size) => {
 };
 
 const stagedFiles = [];
+let recaptchaScriptPromise = null;
 
 const showError = (message) => {
   successEl.textContent = message;
@@ -42,6 +52,71 @@ const setSubmittingState = (isSubmitting) => {
   submitButton.setAttribute("aria-busy", isSubmitting ? "true" : "false");
   submitButton.textContent = isSubmitting ? "Submitting..." : defaultSubmitLabel;
 };
+
+const ensureRecaptchaLoaded = async () => {
+  if (!RECAPTCHA_SITE_KEY || RECAPTCHA_SITE_KEY.includes("REPLACE_WITH_")) {
+    throw new Error("reCAPTCHA is not configured yet.");
+  }
+
+  if (window.grecaptcha?.execute) return;
+
+  if (!recaptchaScriptPromise) {
+    recaptchaScriptPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(RECAPTCHA_SITE_KEY)}`;
+      script.async = true;
+      script.defer = true;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("Failed to load reCAPTCHA."));
+      document.head.appendChild(script);
+    });
+  }
+
+  await recaptchaScriptPromise;
+
+  const maxWaitMs = 3000;
+  const intervalMs = 100;
+  let waited = 0;
+
+  while (!window.grecaptcha?.execute && waited < maxWaitMs) {
+    await new Promise((resolve) => window.setTimeout(resolve, intervalMs));
+    waited += intervalMs;
+  }
+
+  if (!window.grecaptcha?.execute) {
+    throw new Error("reCAPTCHA failed to initialize.");
+  }
+};
+
+const getRecaptchaToken = async () => {
+  await ensureRecaptchaLoaded();
+
+  await new Promise((resolve) => {
+    window.grecaptcha.ready(resolve);
+  });
+
+  return window.grecaptcha.execute(RECAPTCHA_SITE_KEY, {
+    action: RECAPTCHA_ACTION,
+  });
+};
+
+const verifyBotCheck = async () => {
+  const token = await getRecaptchaToken();
+  const result = await verifyRecaptchaV3({
+    action: RECAPTCHA_ACTION,
+    token,
+  });
+
+  if (!result?.data?.success) {
+    throw new Error("Bot check failed. Please try again.");
+  }
+};
+
+if (form) {
+  ensureRecaptchaLoaded().catch((error) => {
+    console.warn("reCAPTCHA preload failed:", error);
+  });
+}
 
 const renderSelectedAttachments = () => {
   if (!selectedAttachmentsEl) return;
@@ -135,6 +210,8 @@ if (form) {
     };
 
     try {
+      await verifyBotCheck();
+
       if (files.length) {
         const now = Date.now();
         attachments = await Promise.all(

@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { getFunctions } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-functions.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -17,7 +18,11 @@ export const DATABASE_ID = "it-tickets";
 export const PROJECT_ID = firebaseConfig.projectId;
 export const TICKET_STORAGE_BUCKET = "gs://it-tickets-992de";
 
+// Replace with your production reCAPTCHA v3 site key.
+export const RECAPTCHA_SITE_KEY = "6Lf9KIQsAAAAAFgt1F6cM2UG3gg_UJ37gtYKCXW3";
+
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, DATABASE_ID);
+export const functions = getFunctions(app, "us-central1");
 export const storage = getStorage(app, TICKET_STORAGE_BUCKET);
